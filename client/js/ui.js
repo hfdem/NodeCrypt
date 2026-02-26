@@ -26,6 +26,29 @@ import {
 	updateChatInputStyle
 } from './chat.js';
 
+// 随机房间名/密码生成
+const ADJECTIVES = ['Red','Blue','Big','Fast','Cool','Wild','Dark','Tiny','Lazy','Cute'];
+const ANIMALS = ['Cat','Dog','Bunny','Duck','Frog','Hamster','Sheep','Piggy','Chick','Puppy'];
+const CELESTIAL = ['Nova','Orbit','Pulsar','Vega','Lyra','Orion','Sirius','Atlas','Titan','Cygnus'];
+
+function generateUserName() {
+	const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+	const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+	return adj + animal;
+}
+
+function generateRoomName() {
+	const name = CELESTIAL[Math.floor(Math.random() * CELESTIAL.length)];
+	const num = Math.floor(Math.random() * 90) + 10;
+	return name + num;
+}
+
+function generatePassword() {
+	const name = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+	const num = Math.floor(Math.random() * 90) + 10;
+	return name + num;
+}
+
 // Utility functions for security and error handling
 // 安全和错误处理工具函数
 
@@ -452,6 +475,7 @@ export function loginFormHandler(modal) {
 			btn.disabled = true;
 			btn.innerText = t('ui.connecting', 'Connecting...')
 		}
+		localStorage.setItem('nodecrypt_username', userName);
 		window.joinRoom(userName, roomName, password, modal, function(success) {
 			if (!success && btn) {
 				btn.disabled = false;
@@ -468,10 +492,12 @@ export function generateLoginForm(isModal = false) {
 	return `		<div class="input-group">
 			<input id="userName${idPrefix}" type="text" autocomplete="username" required minlength="1" maxlength="15" placeholder="">
 			<label for="userName${idPrefix}" class="floating-label">${t('ui.username', 'Username')}</label>
+			<button type="button" class="randomize-btn" data-target="userName${idPrefix}" title="Random">&#x21BB;</button>
 		</div>
 		<div class="input-group">
 			<input id="roomName${idPrefix}" type="text" required minlength="1" maxlength="15" placeholder="">
 			<label for="roomName${idPrefix}" class="floating-label">${t('ui.node_name', 'Node Name')}</label>
+			<button type="button" class="randomize-btn" data-target="roomName${idPrefix}" title="Random">&#x21BB;</button>
 		</div>
 		<div class="input-group">
 			<input id="password${idPrefix}" type="password" autocomplete="${isModal ? 'off' : 'current-password'}" minlength="1" maxlength="15" placeholder="">
@@ -488,9 +514,17 @@ export function openLoginModal() {
 	modal.querySelector('.login-modal-close').onclick = () => modal.remove();
 	preventSpaceInput(modal.querySelector('#userName-modal'));
 	preventSpaceInput(modal.querySelector('#roomName-modal'));
-	preventSpaceInput(modal.querySelector('#password-modal'));	const form = modal.querySelector('#login-form-modal');
+	preventSpaceInput(modal.querySelector('#password-modal'));
+	const form = modal.querySelector('#login-form-modal');
 	form.addEventListener('submit', loginFormHandler(modal));
-	autofillRoomPwd('-modal')
+	autofillRoomPwd('-modal');
+	// 预填用户名（优先用已保存的，否则随机）和随机节点名
+	const savedName = localStorage.getItem('nodecrypt_username');
+	const userInput = document.getElementById('userName-modal');
+	const roomInput = document.getElementById('roomName-modal');
+	if (userInput && !userInput.value) userInput.value = savedName || generateRoomName();
+	if (roomInput && !roomInput.value) roomInput.value = generateRoomName();
+	bindRandomizeBtns(form);
 }
 
 // Setup member list tabs
@@ -571,6 +605,13 @@ export function autofillRoomPwd(formPrefix = '') {
 	if (roomValue || pwdValue) {
 		window.history.replaceState({}, '', location.pathname);
 	}
+
+	// Autofill saved username
+	const savedName = localStorage.getItem('nodecrypt_username');
+	if (savedName) {
+		const userInput = document.getElementById(formPrefix + 'userName');
+		if (userInput && !userInput.value) userInput.value = savedName;
+	}
 }
 
 // 初始化登录表单
@@ -582,10 +623,38 @@ export function initLoginForm() {
 		// Only initialize if login form is empty
 		loginFormContainer.innerHTML = generateLoginForm(false);
 	}
-	
+
+	// 预填用户名（优先用已保存的，否则随机）和随机节点名
+	const savedName = localStorage.getItem('nodecrypt_username');
+	const userInput = document.getElementById('userName');
+	const roomInput = document.getElementById('roomName');
+	if (userInput && !userInput.value) userInput.value = savedName || generateUserName();
+	if (roomInput && !roomInput.value) roomInput.value = generateRoomName();
+
+	// 绑定刷新按钮事件
+	bindRandomizeBtns(loginFormContainer);
+
 	// 为登录页面添加class，用于手机适配
 	// Add class to login page for mobile adaptation
 	document.body.classList.add('login-page');
+}
+
+function bindRandomizeBtns(container) {
+	if (!container) return;
+	container.querySelectorAll('.randomize-btn').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const targetId = btn.dataset.target;
+			const input = document.getElementById(targetId);
+			if (!input || input.readOnly) return;
+			if (targetId.startsWith('userName')) {
+				input.value = generateUserName();
+			} else if (targetId.startsWith('roomName')) {
+				input.value = generateRoomName();
+			} else {
+				input.value = generatePassword();
+			}
+		});
+	});
 }
 
 // Listen for language change events to refresh UI
