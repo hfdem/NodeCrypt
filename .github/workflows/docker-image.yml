@@ -3,11 +3,12 @@ name: Docker Build and Push
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.repository == 'shuaiplus/nodecrypt'
+    if: github.repository == 'hfdem/NodeCrypt'
     steps:
       - uses: actions/checkout@v4
       - name: Log in to GitHub Container Registry
@@ -22,5 +23,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/shuaiplus/nodecrypt:latest
-            ghcr.io/shuaiplus/nodecrypt:${{ github.sha }}
+            ghcr.io/hfdem/nodecrypt:latest
+            ghcr.io/hfdem/nodecrypt:${{ github.sha }}
