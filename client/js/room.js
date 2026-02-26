@@ -132,7 +132,11 @@ export function joinRoom(userName, roomName, password, modal = null, onResult) {
 		onClientSecured: (user) => handleClientSecured(idx, user),
 		onClientList: (list, selfId) => handleClientList(idx, list, selfId),
 		onClientLeft: (clientId) => handleClientLeft(idx, clientId),
-		onClientMessage: (msg) => handleClientMessage(idx, msg)
+		onClientMessage: (msg) => handleClientMessage(idx, msg),
+		onUsernameTaken: () => {
+			if (onResult && !closed) { closed = true; onResult(false); }
+			handleUsernameTaken(idx);
+		}
 	};
 	const chatInst = new window.NodeCrypt(window.config, callbacks);
 	chatInst.setCredentials(userName, roomName, password);
@@ -377,6 +381,46 @@ export function exitRoom() {
 }
 
 export { roomsData, activeRoomIndex };
+
+// Handle username taken error
+// 处理用户名已被占用错误
+function handleUsernameTaken(idx) {
+	const rd = roomsData[idx];
+	if (!rd) return;
+	if (rd.chat) rd.chat.destruct();
+	roomsData.splice(idx, 1);
+	if (roomsData.length > 0) {
+		switchRoom(0);
+	} else {
+		const chatContainer = $id('chat-container');
+		if (chatContainer) chatContainer.style.display = 'none';
+		const loginContainer = $id('login-container');
+		if (loginContainer) loginContainer.style.display = '';
+	}
+	// 直接重置登录按钮状态
+	const btn = document.querySelector('#login-form .login-btn');
+	if (btn) {
+		btn.disabled = false;
+		btn.innerText = t('ui.enter', 'ENTER');
+	}
+	showErrorToast(t('error.username_taken', 'Username already taken in this node'));
+}
+
+// Show a temporary error toast notification
+// 显示临时错误提示
+function showErrorToast(msg) {
+	const toast = document.createElement('div');
+	toast.textContent = msg;
+	toast.style.cssText = [
+		'position:fixed', 'top:24px', 'left:50%', 'transform:translateX(-50%)',
+		'background:var(--color-error,#e53935)', 'color:#fff',
+		'padding:10px 22px', 'border-radius:6px', 'font-size:14px',
+		'z-index:9999', 'box-shadow:0 2px 8px rgba(0,0,0,.3)',
+		'pointer-events:none'
+	].join(';');
+	document.body.appendChild(toast);
+	setTimeout(() => toast.remove(), 4000);
+}
 
 // Listen for sidebar username update event
 // 监听侧边栏用户名更新事件

@@ -110,7 +110,8 @@ wss.on('connection', (connection) => {
 		connection: connection,
 		seen: getTime(),
 		key: null,
-		channel: null
+		channel: null,
+		userName: null
 	};
 
 	try {
@@ -306,8 +307,24 @@ const handleJoinChannel = (clientId, decrypted) => {
 
 	try {
 		const channel = decrypted.p;
+		const userName = isString(decrypted.u) ? decrypted.u.trim() : null;
+
+		// 查重：检查 channel 中是否已有相同用户名
+		if (userName && channels[channel]) {
+			for (const memberId of channels[channel]) {
+				if (clients[memberId] && clients[memberId].userName === userName) {
+					sendMessage(clients[clientId].connection, encryptMessage(
+						{ a: 'e', p: 'username_taken' },
+						clients[clientId].shared
+					));
+					closeConnection(clients[clientId].connection);
+					return;
+				}
+			}
+		}
 
 		clients[clientId].channel = channel;
+		clients[clientId].userName = userName;
 
 		if (!channels[channel]) {
 			channels[channel] = [clientId];

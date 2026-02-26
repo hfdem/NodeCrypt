@@ -92,6 +92,7 @@ const LANGUAGES = {
 			'system.private_message_failed': 'Cannot send private message to',
 			'system.private_file_failed': 'Cannot send private file to',
 			'system.user_not_connected': 'User might not be fully connected.',
+			'error.username_taken': 'Username already taken in this node',
 					// Help page
 			'help.title': 'User Guide',
 			'help.back_to_login': 'Back to Login',
@@ -216,6 +217,7 @@ const LANGUAGES = {
 			'system.private_message_failed': '无法发送私信给',
 			'system.private_file_failed': '无法发送私密文件给',
 			'system.user_not_connected': '用户可能未完全连接。',
+			'error.username_taken': '该节点中用户名已被占用',
 			
 			// Help page
 			'help.title': '使用说明',

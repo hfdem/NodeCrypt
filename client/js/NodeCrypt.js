@@ -35,6 +35,7 @@ class NodeCrypt {
 			onClientSecured: callbacks.onClientSecured || null,
 			onClientList: callbacks.onClientList || null,
 			onClientMessage: callbacks.onClientMessage || null,
+			onUsernameTaken: callbacks.onUsernameTaken || null,
 		};
 		this.SERVER_KEY_STORAGE = 'nodecrypt_server_key';
 		try {
@@ -134,6 +135,7 @@ class NodeCrypt {
 		this.callbacks.onClientSecured = null;
 		this.callbacks.onClientList = null;
 		this.callbacks.onClientMessage = null;
+		this.callbacks.onUsernameTaken = null;
 		this.clientEc = null;
 		this.serverKeys = null;
 		this.serverShared = null;
@@ -217,7 +219,8 @@ class NodeCrypt {
 					}, this.serverKeys.privateKey, 384)).slice(8, 40);
 					this.sendMessage(this.encryptServerMessage({
 						a: 'j',
-						p: this.credentials.channel
+						p: this.credentials.channel,
+						u: this.credentials.username
 					}, this.serverShared));
 					if (this.callbacks.onServerSecured) {
 						try {
@@ -236,6 +239,14 @@ class NodeCrypt {
 		this.logEvent('onMessage-server-decrypted', serverDecrypted);
 		if (!this.isObject(serverDecrypted) || !this.isString(serverDecrypted.a)) {
 			return
+		}
+		if (serverDecrypted.a === 'e' && serverDecrypted.p === 'username_taken') {
+			this.credentials = null;
+			this.disconnect();
+			if (this.callbacks.onUsernameTaken) {
+				try { this.callbacks.onUsernameTaken(); } catch (e) {}
+			}
+			return;
 		}
 		if (serverDecrypted.a === 'l' && this.isArray(serverDecrypted.p)) {
 			try {
