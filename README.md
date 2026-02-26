@@ -7,7 +7,7 @@
 ### 方法一：一键部署到 Cloudflare Workers
 
 点击下方按钮即可一键部署到 Cloudflare Workers：
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button?projectName=NodeCrypt)](https://deploy.workers.cloudflare.com/?url=https://github.com/shuaiplus/NodeCrypt)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button?projectName=NodeCrypt)](https://deploy.workers.cloudflare.com/?url=https://github.com/hfdem/NodeCrypt)
 
 - 构建命令：npm run build
 - 部署命令：npm run deploy
@@ -26,7 +26,7 @@
 ### 方法三：Docker 一键部署（不稳定，不建议）
 
 ```bash
-docker run -d --name nodecrypt -p 80:80 ghcr.io/shuaiplus/nodecrypt
+docker run -d --name nodecrypt -p 80:80 ghcr.io/hfdem/nodecrypt
 ```
 
 ！ 必须开启HTTPS，不然传输密钥会失败，导致无法进入房间。
@@ -172,7 +172,7 @@ sequenceDiagram
 ---
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=shuaiplus/NodeCrypt&type=Timeline)](https://www.star-history.com/#shuaiplus/NodeCrypt&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=hfdem/NodeCrypt&type=Timeline)](https://www.star-history.com/#hfdem/NodeCrypt&Timeline)
 
 **NodeCrypt** - 真正的端到端加密通信 🔐
 
